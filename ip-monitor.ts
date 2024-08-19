@@ -74,7 +74,7 @@ async function getIpDoH(name: string, type: string): Promise<string> {
             headers: {
                 Accept: "application/dns-json",
             },
-        }
+        },
     );
     const result = await response.json();
     const ip = result["Answer"][0]["data"];
@@ -101,7 +101,7 @@ async function getIpTrace(ipVersion: Ip): Promise<string> {
     const cloudflareTraceUrl = new URL("https://one.one.one.one/cdn-cgi/trace");
     const cloudflareIp = await getIpDoH(
         cloudflareTraceUrl.hostname,
-        dnsRecordType
+        dnsRecordType,
     );
 
     switch (ipVersion) {
@@ -128,7 +128,19 @@ async function getIpTrace(ipVersion: Ip): Promise<string> {
         throw new Error("No IP found");
     }
 
-    return ip;
+    switch (ipVersion) {
+        case Ip.V4:
+            return ip;
+            break;
+        case Ip.V6:
+            const prefix = ip
+                .split(":")
+                .slice(0, 4)
+                .join(":")
+                .concat("::");
+            return prefix;
+            break;
+    }
 }
 
 export default {};
